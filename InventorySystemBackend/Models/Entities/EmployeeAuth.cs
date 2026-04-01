@@ -1,0 +1,29 @@
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace InventorySystemBackend.Models.Entities
+{
+    [Table("employeeauthenticationtable")]
+    public class EmployeeAuth
+    {
+        [Key]
+        public int auth_id { get; set; }
+
+        public int employee_id { get; set; }
+
+        public required string email { get; set; }
+        public string? password_hash { get; set; }
+        public required string employee_role { get; set; }
+
+        public required string auth_provider { get; set; } = "local";
+        public string? provider_id { get; set; }
+
+        public bool is_active { get; set; } = true;
+        public DateTime created_at { get; set; } = DateTime.UtcNow;
+
+        [ForeignKey("employee_id")]
+        public EmployeeProfile Employee { get; set; }
+        public required string password_status { get; set; }
+
+    }
+}
