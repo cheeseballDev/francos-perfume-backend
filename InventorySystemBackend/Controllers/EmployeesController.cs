@@ -1,8 +1,9 @@
 ﻿using InventorySystemBackend.Data;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using InventorySystemBackend.DTOs;
 using InventorySystemBackend.Models.Entities;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace InventorySystemBackend.Controllers
@@ -55,11 +56,15 @@ namespace InventorySystemBackend.Controllers
                 dbContext.EmployeeProfiles.Add(employee);
                 await dbContext.SaveChangesAsync();
 
+                var tempPassword = "PUTANGINAMO";
+                var hasher = new PasswordHasher<object>();
+                var hashedPassword = hasher.HashPassword(null, tempPassword);
+
                 var auth = new EmployeeAuths
                 {
                     employee_id = employee.employee_id,
                     email = dto.email,
-                    password_hash = dto.password ?? "TEMP",
+                    password_hash = hashedPassword,
                     password_status = "temporary",
                     auth_provider = "local",
                     employee_role = dto.employee_role,
@@ -152,7 +157,8 @@ namespace InventorySystemBackend.Controllers
 
                 if (auth.password_status == "active" && !string.IsNullOrEmpty(update.password))
                 {
-                    auth.password_hash = update.password;
+                    var hasher = new PasswordHasher<object>();
+                    auth.password_hash = hasher.HashPassword(null, update.password);
                 }
 
                 await dbContext.SaveChangesAsync();
@@ -171,40 +177,6 @@ namespace InventorySystemBackend.Controllers
                 await transaction.RollbackAsync();
                 return StatusCode(500, ex.ToString());
             }
-        }
-
-        [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDTO dto)
-        {
-            var auth = await dbContext.EmployeeAuths
-                .Include(a => a.Employee)
-                .FirstOrDefaultAsync(a => a.email == dto.email);
-
-            if (auth == null)
-                return Unauthorized("Email not found");
-
-            if (auth.password_hash != dto.password)//wala pang hashing simulation palang to
-                return Unauthorized("Wrong password");
-
-            if (auth.password_status == "temporary")
-            {
-                if (string.IsNullOrEmpty(dto.newPassword))
-                    return Ok(new { requiresPasswordChange = true, message = "Change your password dipshit" });
-
-                auth.password_hash = dto.newPassword;
-                auth.password_status = "active";
-
-                await dbContext.SaveChangesAsync();
-            }
-                
-
-            return Ok(new
-            {
-                auth.Employee.employee_id,
-                auth.Employee.employee_full_name,
-                auth.password_hash, //TESTING LANG DIN BURAHIN BAGO IFULL RELEASE
-                auth.password_status //ISA PATO
-            });
         }
     }
 }
