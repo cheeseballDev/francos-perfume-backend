@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace InventorySystemBackend.Models.Entities
 {
     [Table("employeeauthenticationtable")]
-    public class EmployeeAuth
+    public class EmployeeAuths
     {
         [Key]
         public int auth_id { get; set; }
@@ -22,7 +22,7 @@ namespace InventorySystemBackend.Models.Entities
         public DateTime created_at { get; set; } = DateTime.UtcNow;
 
         [ForeignKey("employee_id")]
-        public EmployeeProfile Employee { get; set; }
+        public EmployeeProfiles Employee { get; set; }
         public required string password_status { get; set; }
 
     }

@@ -26,8 +26,8 @@ namespace InventorySystemBackend.Data
                 .HasKey(i => new { i.product_id, i.branch_id });
         }
 
-        public DbSet<EmployeeProfile> EmployeeProfiles { get; set; }
-        public DbSet<EmployeeAuth> EmployeeAuths { get; set; }        
+        public DbSet<EmployeeProfiles> EmployeeProfiles { get; set; }
+        public DbSet<EmployeeAuths> EmployeeAuths { get; set; }        
         public DbSet<Branches> Branches { get; set; }
         public DbSet<Products> Products { get; set; }
         public DbSet<Inventory> Inventories { get; set; }

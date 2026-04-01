@@ -2,8 +2,8 @@
 {
     public class LoginDTO
     {
-        public string Username { get; set; } = null!;
-        public string Password { get; set; } = null!;
-        //wala pa to, sabihin mo lang kung need mo na agad
+        public string email { get; set; } = null!;
+        public string password { get; set; } = null!;
+        public string? newPassword { get; set; } = null!;
     }
 }

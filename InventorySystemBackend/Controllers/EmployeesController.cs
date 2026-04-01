@@ -23,6 +23,13 @@ namespace InventorySystemBackend.Controllers
             return Ok(allEmployees);
         }
 
+        [HttpGet("displayAllAuths")]//TESTING LANG DAHIL TINATAMAD AKO MAG ALT TAB SA PGADMIN4 BURAHIN BAGO IFULL RELEASE
+        public IActionResult DisplayEmployeesAuth()
+        {
+            var allEmployeesAuth = dbContext.EmployeeAuths.ToList();
+            return Ok(allEmployeesAuth);
+        }
+
         [HttpPost("add")]
         public async Task<IActionResult> AddEmployee(AddEmployeeDTO dto)
         {
@@ -30,10 +37,13 @@ namespace InventorySystemBackend.Controllers
 
             try
             {
-                var employee = new EmployeeProfile
+                if (await dbContext.EmployeeAuths.AnyAsync(x => x.email == dto.email))
+                    return BadRequest("Email already exists");
+
+                var employee = new EmployeeProfiles
                 {
                     branch_id = dto.branch_id,
-                    full_name = dto.full_name,
+                    employee_full_name = dto.full_name,
                     contact_number = dto.contact_number,
                     address = dto.address,
                     employee_shift = dto.employee_shift,
@@ -45,7 +55,7 @@ namespace InventorySystemBackend.Controllers
                 dbContext.EmployeeProfiles.Add(employee);
                 await dbContext.SaveChangesAsync();
 
-                var auth = new EmployeeAuth
+                var auth = new EmployeeAuths
                 {
                     employee_id = employee.employee_id,
                     email = dto.email,
@@ -66,7 +76,7 @@ namespace InventorySystemBackend.Controllers
                 {
                     employee.employee_id,
                     employee.employee_display_id,
-                    employee.full_name
+                    employee.employee_full_name
                 });
             }
             catch (Exception ex)
@@ -83,8 +93,8 @@ namespace InventorySystemBackend.Controllers
             }
         }
 
-        [HttpPut("update/{id:int}")]
-        public async Task<IActionResult> UpdateEmployee(int id, UpdateEmployeeDTO update)
+        [HttpPut("updateProfile/{id:int}")]
+        public async Task<IActionResult> UpdateEmployeeProfile(int id, UpdateEmployeeProfileDTO update)
         {
             using var transaction = await dbContext.Database.BeginTransactionAsync();
 
@@ -95,23 +105,52 @@ namespace InventorySystemBackend.Controllers
                 if (employee == null)
                     return NotFound();
 
+                employee.branch_id = update.branch_id;
+                employee.contact_number = update.contact_number;
+                employee.address = update.address;
+                employee.employee_full_name = update.full_name;
+                employee.employee_shift = update.employee_shift;
+                employee.employee_profile_picture = update.employee_profile_picture;
+
+                await dbContext.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Ok(new
+                {
+                    employee.employee_id,
+                    employee.employee_full_name,
+                });
+            }
+            catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return StatusCode(500, ex.ToString());
+                }
+            }
+
+        [HttpPut("updateAuth/{id:int}")]
+        public async Task<IActionResult> UpdateEmployeeAuth(int id, UpdateEmployeeAuthDTO update)
+        {
+            using var transaction = await dbContext.Database.BeginTransactionAsync();
+
+            try
+            {
+                var employeeAuth = await dbContext.EmployeeAuths.FindAsync(id);
+
+                if (employeeAuth == null)
+                    return NotFound();
+
                 var auth = await dbContext.EmployeeAuths
                     .FirstOrDefaultAsync(x => x.employee_id == id);
 
                 if (auth == null)
                     return NotFound("Auth record not found");
 
-                employee.branch_id = update.branch_id;
-                employee.contact_number = update.contact_number;
-                employee.address = update.address;
-                employee.full_name = update.full_name;
-                employee.employee_shift = update.employee_shift;
-                employee.employee_profile_picture = update.employee_profile_picture;
-
                 auth.email = update.email;
                 auth.employee_role = update.employee_role;
+                auth.password_status = update.password_status;
 
-                if (!string.IsNullOrEmpty(update.password))
+                if (auth.password_status == "active" && !string.IsNullOrEmpty(update.password))
                 {
                     auth.password_hash = update.password;
                 }
@@ -121,17 +160,51 @@ namespace InventorySystemBackend.Controllers
 
                 return Ok(new
                 {
-                    employee.employee_id,
-                    employee.full_name,
                     auth.email,
-                    auth.employee_role
+                    auth.employee_role,
+                    auth.password_hash, //TESTING LANG DIN BURAHIN BAGO IFULL RELEASE
+                    auth.password_status //ISA PATO
                 });
             }
             catch (Exception ex)
-                {
-                    await transaction.RollbackAsync();
-                    return StatusCode(500, ex.ToString());
-                }
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, ex.ToString());
             }
         }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginDTO dto)
+        {
+            var auth = await dbContext.EmployeeAuths
+                .Include(a => a.Employee)
+                .FirstOrDefaultAsync(a => a.email == dto.email);
+
+            if (auth == null)
+                return Unauthorized("Email not found");
+
+            if (auth.password_hash != dto.password)//wala pang hashing simulation palang to
+                return Unauthorized("Wrong password");
+
+            if (auth.password_status == "temporary")
+            {
+                if (string.IsNullOrEmpty(dto.newPassword))
+                    return Ok(new { requiresPasswordChange = true, message = "Change your password dipshit" });
+
+                auth.password_hash = dto.newPassword;
+                auth.password_status = "active";
+
+                await dbContext.SaveChangesAsync();
+            }
+                
+
+            return Ok(new
+            {
+                auth.Employee.employee_id,
+                auth.Employee.employee_full_name,
+                auth.password_hash, //TESTING LANG DIN BURAHIN BAGO IFULL RELEASE
+                auth.password_status //ISA PATO
+            });
+        }
     }
+}

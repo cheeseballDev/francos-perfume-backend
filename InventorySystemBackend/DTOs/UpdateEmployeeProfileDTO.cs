@@ -1,12 +1,8 @@
 ﻿namespace InventorySystemBackend.DTOs
 {
-    public class UpdateEmployeeDTO
+    public class UpdateEmployeeProfileDTO
     {
         public int branch_id { get; set; }
-
-        public required string email { get; set; }
-        public required string password { get; set; }
-
         public required string contact_number { get; set; }
         public required string address { get; set; }
 

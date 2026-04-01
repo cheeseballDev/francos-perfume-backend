@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace InventorySystemBackend.Models.Entities
 {
     [Table("employeeprofiletable")]
-    public class EmployeeProfile
+    public class EmployeeProfiles
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -15,7 +15,7 @@ namespace InventorySystemBackend.Models.Entities
 
         public int branch_id { get; set; }
 
-        public required string full_name { get; set; }
+        public required string employee_full_name { get; set; }
 
         public required string contact_number { get; set; }
         public required string address { get; set; }
@@ -26,6 +26,6 @@ namespace InventorySystemBackend.Models.Entities
         public required string account_status { get; set; }
         public required string employee_profile_picture {  get; set; }
 
-        public ICollection<EmployeeAuth> AuthMethods { get; set; } = new List<EmployeeAuth>();
+        public ICollection<EmployeeAuths> AuthMethods { get; set; } = new List<EmployeeAuths>();
     }
 }
