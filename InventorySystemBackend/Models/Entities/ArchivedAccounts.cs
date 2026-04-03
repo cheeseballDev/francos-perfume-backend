@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace InventorySystemBackend.Models.Entities
 {
     [Table("archiveaccountstable")]
-    public class ArchiveAccounts
+    public class ArchivedAccounts
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -13,17 +13,13 @@ namespace InventorySystemBackend.Models.Entities
 
         public string? account_archive_display_id { get; set; }
 
-        public int employee_id { get; set; }
         public required string employee_display_id { get; set; }
-        public required string auth_id { get; set; }
-
-        public required string full_name { get; set; }
 
         public required string email { get; set; }
 
         public required string employee_role { get; set; }
 
-        public int branch_id { get; set; }
+        public int branch_id{ get; set; }
         public required string archived_by { get; set; }
 
         public DateTime date_archived { get; set; } = DateTime.UtcNow;

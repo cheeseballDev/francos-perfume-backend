@@ -23,7 +23,6 @@ namespace InventorySystemBackend.Models.Entities
         public required string employee_shift { get; set; }
 
         public DateTime account_created { get; set; } = DateTime.UtcNow;
-        public required string account_status { get; set; }
         public required string employee_profile_picture {  get; set; }
 
         public ICollection<EmployeeAuths> AuthMethods { get; set; } = new List<EmployeeAuths>();

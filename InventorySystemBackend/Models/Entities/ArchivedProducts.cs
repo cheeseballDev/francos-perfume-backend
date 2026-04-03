@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace InventorySystemBackend.Models.Entities
 {
     [Table("archiveproductstable")]
-    public class ArchiveProducts
+    public class ArchivedProducts
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -12,7 +12,6 @@ namespace InventorySystemBackend.Models.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
 
         public string? product_archive_display_id { get; set; }
-        public int product_id { get; set; }
 
         public required string product_display_id { get; set; }
 

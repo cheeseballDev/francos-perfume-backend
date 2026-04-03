@@ -1,6 +1,7 @@
 ﻿using InventorySystemBackend.Data;
 using InventorySystemBackend.DTOs;
 using InventorySystemBackend.Models.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +23,15 @@ namespace InventorySystemBackend.Controllers
         {
             var allEmployees = dbContext.EmployeeProfiles.ToList();
             return Ok(allEmployees);
+        }
+
+        [HttpGet("profile")]
+        [Authorize]
+        public IActionResult GetProfile()
+        {
+            var empId = User.GetEmployeeId();
+            var profile = dbContext.EmployeeProfiles.FirstOrDefault(x => x.employee_id.ToString() == empId);
+            return Ok(new { profile });
         }
 
         [HttpGet("displayAllAuths")]//TESTING LANG DAHIL TINATAMAD AKO MAG ALT TAB SA PGADMIN4 BURAHIN BAGO IFULL RELEASE
@@ -49,7 +59,6 @@ namespace InventorySystemBackend.Controllers
                     address = dto.address,
                     employee_shift = dto.employee_shift,
                     account_created = DateTime.UtcNow,
-                    account_status = "Active",
                     employee_profile_picture = dto.employee_profile_picture
                 };
 
@@ -68,7 +77,7 @@ namespace InventorySystemBackend.Controllers
                     password_status = "temporary",
                     auth_provider = "local",
                     employee_role = dto.employee_role,
-                    is_active = true,
+                    account_status = "active",
                     created_at = DateTime.UtcNow
                 };
 

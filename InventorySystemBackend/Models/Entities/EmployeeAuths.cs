@@ -18,12 +18,13 @@ namespace InventorySystemBackend.Models.Entities
         public required string auth_provider { get; set; } = "local";
         public string? provider_id { get; set; }
 
-        public bool is_active { get; set; } = true;
         public DateTime created_at { get; set; } = DateTime.UtcNow;
 
         [ForeignKey("employee_id")]
         public EmployeeProfiles Employee { get; set; }
         public required string password_status { get; set; }
+        public required string account_status { get; set; }
+
 
     }
 }

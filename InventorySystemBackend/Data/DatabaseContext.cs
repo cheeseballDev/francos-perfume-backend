@@ -1,6 +1,7 @@
 ﻿using InventorySystemBackend.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using System.Security.Claims;
 
 namespace InventorySystemBackend.Data
 {
@@ -35,7 +36,7 @@ namespace InventorySystemBackend.Data
         public DbSet<SoldItems> SoldItems { get; set; }
         public DbSet<Requests> Requests { get; set; }
         public DbSet<AuditLogs> AuditLogs { get; set; }
-        public DbSet<ArchiveAccounts> ArchiveAccounts { get; set; }
-        public DbSet<ArchiveProducts> ArchiveProducts { get; set; }
+        public DbSet<ArchivedAccounts> ArchivedAccounts { get; set; }
+        public DbSet<ArchivedProducts> ArchivedProducts { get; set; }
     }
 }

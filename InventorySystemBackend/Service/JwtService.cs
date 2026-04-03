@@ -1,5 +1,6 @@
 ﻿using InventorySystemBackend.Data;
 using InventorySystemBackend.Models.API;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -28,6 +29,9 @@ namespace InventorySystemBackend.Service
                 .FirstOrDefaultAsync(x => x.email == request.email);
 
             if (account == null)
+                return null;
+
+            if(account.account_status == "archived")
                 return null;
 
             var hasher = new PasswordHasher<object>();
@@ -73,8 +77,8 @@ namespace InventorySystemBackend.Service
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: iconfig["Jwt:Issuer"],
-                audience: iconfig["Jwt:Audience"],
+                issuer: iconfig["JwtConfig:Issuer"],
+                audience: iconfig["JwtConfig:Audience"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddHours(2),
                 signingCredentials: creds
