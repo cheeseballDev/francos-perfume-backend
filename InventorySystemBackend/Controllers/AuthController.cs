@@ -1,5 +1,5 @@
 ﻿using InventorySystemBackend.Models.API;
-using InventorySystemBackend.Service;
+using InventorySystemBackend.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

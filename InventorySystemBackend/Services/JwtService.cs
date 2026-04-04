@@ -8,7 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace InventorySystemBackend.Service
+namespace InventorySystemBackend.Services
 {
     public class JwtService
     {
@@ -68,7 +68,9 @@ namespace InventorySystemBackend.Service
                 new Claim(ClaimTypes.Name, account.email),
                 new Claim(ClaimTypes.Role, account.employee_role),
                 new Claim("branch_id", employee.branch_id.ToString()),
-                new Claim("employee_id", employee.employee_id.ToString())
+                new Claim("branch_display_id", employee.branch_display_id),
+                new Claim("employee_id", employee.employee_id.ToString()),
+                new Claim("employee_display_id", employee.employee_display_id)
             };
 
             var key = new SymmetricSecurityKey(

@@ -15,7 +15,7 @@ namespace InventorySystemBackend.Models.Entities
         public int employee_id { get; set; }
         public int branch_id { get; set; }
 
-        public int sales_total { get; set; }
+        public decimal sales_total { get; set; }
         public required string sales_payment_method { get; set; }
 
         public DateTime sales_timestamp { get; set; } = DateTime.UtcNow;

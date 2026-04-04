@@ -1,11 +1,15 @@
 ﻿using InventorySystemBackend.Data;
 using InventorySystemBackend.DTOs;
 using InventorySystemBackend.Models.Entities;
+using InventorySystemBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
+using System.Security.Claims;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace InventorySystemBackend.Controllers
 {
@@ -19,14 +23,37 @@ namespace InventorySystemBackend.Controllers
             this.dbContext = dbContext;
         }
         [HttpGet("displayAll")]
-        public IActionResult DisplayEmployees()
+        public async Task<IActionResult> DisplayEmployees()
         {
-            var allEmployees = dbContext.EmployeeProfiles.ToList();
+            var claims = new ClaimsGetter(User);
+            var role = claims.role;
+            var branchId = int.Parse(claims.branchId);
+
+            if (role != "admin")
+            {
+                var branchEmployees = await dbContext.EmployeeProfiles
+                    .Where(i => i.branch_id == branchId)
+                    .ToListAsync();
+
+                return Ok(branchEmployees);
+            }
+
+            var allEmployees = await dbContext.EmployeeProfiles.ToListAsync();
             return Ok(allEmployees);
         }
 
+        [HttpGet("displayOne/{id}")]
+        public IActionResult DisplayEmployeeByID(int id)
+        {
+            var employee = dbContext.EmployeeProfiles.FirstOrDefault(p => p.employee_id == id);
+
+            if (employee == null)
+                return NotFound();
+
+            return Ok(employee);
+        }
+
         [HttpGet("profile")]
-        [Authorize]
         public IActionResult GetProfile()
         {
             var empId = User.GetEmployeeId();
@@ -48,12 +75,27 @@ namespace InventorySystemBackend.Controllers
 
             try
             {
+                var claims = new ClaimsGetter(User);
+                var role = claims.role;
+                var user = claims.employeeDisplayId;
+                var userBranch = claims.GetBranchDisplayId(User);
+
+
                 if (await dbContext.EmployeeAuths.AnyAsync(x => x.email == dto.email))
                     return BadRequest("Email already exists");
+
+                var branch = await dbContext.Branches
+                    .FirstOrDefaultAsync(b => b.branch_id == dto.branch_id);
+
+                if (branch == null)
+                {
+                    return BadRequest("Branch not found");
+                }
 
                 var employee = new EmployeeProfiles
                 {
                     branch_id = dto.branch_id,
+                    branch_display_id = branch.branch_display_id,
                     employee_full_name = dto.full_name,
                     contact_number = dto.contact_number,
                     address = dto.address,
@@ -82,6 +124,17 @@ namespace InventorySystemBackend.Controllers
                 };
 
                 dbContext.EmployeeAuths.Add(auth);
+                await dbContext.SaveChangesAsync();
+
+                var audit = new AuditLogs
+                {
+                    employee_display_id = user,
+                    branch_display_id = userBranch,
+                    log_action = $"Added account ({employee.employee_display_id})",
+                    log_module = "Employee Management",
+                    log_timestamp = DateTime.UtcNow
+                };
+                dbContext.AuditLogs.Add(audit);
                 await dbContext.SaveChangesAsync();
 
                 await transaction.CommitAsync();
@@ -119,7 +172,16 @@ namespace InventorySystemBackend.Controllers
                 if (employee == null)
                     return NotFound();
 
+                var branch = await dbContext.Branches
+                    .FirstOrDefaultAsync(b => b.branch_id == update.branch_id);
+
+                if (branch == null)
+                {
+                    return BadRequest("Branch not found");
+                }
+
                 employee.branch_id = update.branch_id;
+                employee.branch_display_id = branch.branch_display_id;
                 employee.contact_number = update.contact_number;
                 employee.address = update.address;
                 employee.employee_full_name = update.full_name;
@@ -131,16 +193,16 @@ namespace InventorySystemBackend.Controllers
 
                 return Ok(new
                 {
-                    employee.employee_id,
+                    employee.employee_display_id,
                     employee.employee_full_name,
                 });
             }
             catch (Exception ex)
-                {
-                    await transaction.RollbackAsync();
-                    return StatusCode(500, ex.ToString());
-                }
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, ex.ToString());
             }
+        }
 
         [HttpPut("updateAuth/{id:int}")]
         public async Task<IActionResult> UpdateEmployeeAuth(int id, UpdateEmployeeAuthDTO update)
@@ -149,6 +211,11 @@ namespace InventorySystemBackend.Controllers
 
             try
             {
+                var claims = new ClaimsGetter(User);
+                var role = claims.role;
+                var user = claims.employeeDisplayId;
+                var userBranch = claims.GetBranchDisplayId(User);
+
                 var employeeAuth = await dbContext.EmployeeAuths.FindAsync(id);
 
                 if (employeeAuth == null)
@@ -172,6 +239,18 @@ namespace InventorySystemBackend.Controllers
 
                 await dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
+
+                var audit = new AuditLogs
+                {
+                    employee_display_id = user,
+                    branch_display_id = userBranch,
+                    log_action = $"Updated account ({auth.Employee.employee_display_id})",
+                    log_module = "Employee Management",
+                    log_timestamp = DateTime.UtcNow
+                };
+
+                dbContext.AuditLogs.Add(audit);
+                await dbContext.SaveChangesAsync();
 
                 return Ok(new
                 {

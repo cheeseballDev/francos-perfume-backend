@@ -1,5 +1,5 @@
 using InventorySystemBackend.Data;
-using InventorySystemBackend.Service;
+using InventorySystemBackend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;

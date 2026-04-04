@@ -14,6 +14,7 @@ namespace InventorySystemBackend.Models.Entities
         public string? employee_display_id { get; set; }
 
         public int branch_id { get; set; }
+        public string? branch_display_id { get; set; }
 
         public required string employee_full_name { get; set; }
 

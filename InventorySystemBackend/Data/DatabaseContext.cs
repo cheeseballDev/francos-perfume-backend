@@ -25,6 +25,9 @@ namespace InventorySystemBackend.Data
 
             modelBuilder.Entity<Inventory>()
                 .HasKey(i => new { i.product_id, i.branch_id });
+
+            modelBuilder.Entity<SoldItems>()
+                .HasKey(s => new { s.sales_id, s.product_id });
         }
 
         public DbSet<EmployeeProfiles> EmployeeProfiles { get; set; }
