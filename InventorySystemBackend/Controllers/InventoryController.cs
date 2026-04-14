@@ -46,7 +46,7 @@ namespace InventorySystemBackend.Controllers
         }
 
         [HttpPost("add")]
-        public async Task<IActionResult> AddInventory(AddInventoryDTO dto)//wait tangina ang bobo ko 
+        public async Task<IActionResult> AddInventory(AddInventoryDTO dto)
         {
             using var transaction = await dbContext.Database.BeginTransactionAsync();
             try {

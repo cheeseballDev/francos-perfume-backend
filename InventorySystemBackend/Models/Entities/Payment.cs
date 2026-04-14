@@ -14,6 +14,7 @@ namespace InventorySystemBackend.Models.Entities
         public int sales_order_id { get; set; }
         public DateTime payment_date { get; set; } = DateTime.UtcNow;
         public decimal amount_paid { get; set; }
+        public decimal change_amount { get; set; }
         public required string payment_method { get; set; }
         [ForeignKey("sales_order_id")]
         public virtual SalesOrder Sales { get; set; }

@@ -39,5 +39,6 @@ namespace InventorySystemBackend.Data
         public DbSet<ArchivedAccounts> ArchivedAccounts { get; set; }
         public DbSet<ArchivedProducts> ArchivedProducts { get; set; }
         public DbSet<Payment> Payments { get; set; }
+        public DbSet<Discounts> Discounts { get; set; }
     }
 }
