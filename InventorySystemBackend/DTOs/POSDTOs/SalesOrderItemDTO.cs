@@ -1,4 +1,4 @@
-﻿namespace InventorySystemBackend.DTOs
+﻿namespace InventorySystemBackend.DTOs.POSDTOs
 {
     public class SalesOrderItemDTO
     {

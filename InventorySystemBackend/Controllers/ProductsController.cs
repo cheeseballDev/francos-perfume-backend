@@ -1,5 +1,5 @@
 ﻿using InventorySystemBackend.Data;
-using InventorySystemBackend.DTOs;
+using InventorySystemBackend.DTOs.ProductDTOs;
 using InventorySystemBackend.Models.Entities;
 using InventorySystemBackend.Services;
 using Microsoft.AspNetCore.Http;
@@ -47,7 +47,7 @@ namespace InventorySystemBackend.Controllers
                 var claims = new ClaimsGetter(User);
                 var role = claims.role;
                 var user = claims.employeeDisplayId;
-                var userBranch = claims.GetBranchDisplayId(User);
+                var userBranch = claims.branchDisplayId;
 
                 var products = new Products
                 {
@@ -93,7 +93,7 @@ namespace InventorySystemBackend.Controllers
         }
 
         [HttpPut("updateProduct/{id:int}")]
-        public async Task<IActionResult> UpdateEmployeeProfile(int id, UpdateProductDTO dto)
+        public async Task<IActionResult> UpdateProductInformation(int id, UpdateProductDTO dto)
         {
             using var transaction = await dbContext.Database.BeginTransactionAsync();
 
@@ -102,7 +102,7 @@ namespace InventorySystemBackend.Controllers
                 var claims = new ClaimsGetter(User);
                 var role = claims.role;
                 var user = claims.employeeDisplayId;
-                var userBranch = claims.GetBranchDisplayId(User);
+                var userBranch = claims.branchDisplayId;
                 var products = await dbContext.Products.FindAsync(id);
 
                 if (products == null)

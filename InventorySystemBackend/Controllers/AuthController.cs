@@ -1,9 +1,9 @@
-﻿using InventorySystemBackend.Services;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using InventorySystemBackend.Data;
 using InventorySystemBackend.DTOs;
+using InventorySystemBackend.Services;
 
 namespace InventorySystemBackend.Controllers
 {

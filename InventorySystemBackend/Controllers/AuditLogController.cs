@@ -28,7 +28,7 @@ namespace InventorySystemBackend.Controllers
         {
             var claims = new ClaimsGetter(User);
             var role = claims.role;
-            var branchDisplayId = claims.GetBranchDisplayId(User);
+            var branchDisplayId = claims.branchDisplayId;
 
             if (role != "admin")
             {

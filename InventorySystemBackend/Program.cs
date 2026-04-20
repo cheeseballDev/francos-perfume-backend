@@ -1,5 +1,6 @@
 using InventorySystemBackend.Data;
 using InventorySystemBackend.Services;
+using InventorySystemBackend.Services.EmployeeServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -60,6 +61,13 @@ builder.Services.AddAuthentication(options =>
     };
 });
 builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<EmployeeCreationService>();
+builder.Services.AddScoped<EmployeeUpdateAuthService>();
+builder.Services.AddScoped<EmployeeUpdateProfileService>();
+builder.Services.AddScoped<DiscountService>();
+builder.Services.AddScoped<InventoryService>();
+builder.Services.AddScoped<PaymentService>();
+builder.Services.AddScoped<POSService>();
 
 builder.Services.AddAuthentication();
 var app = builder.Build();

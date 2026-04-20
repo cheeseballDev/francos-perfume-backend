@@ -4,27 +4,39 @@ namespace InventorySystemBackend.Services
 {
     public class ClaimsGetter
     {
-        private readonly ClaimsPrincipal User;
+        private readonly ClaimsPrincipal user;
 
         public ClaimsGetter(ClaimsPrincipal user)
-        {
-            User = user;
+        {   
+            this.user = user;
         }
 
-        public string role => User.FindFirst(ClaimTypes.Role)?.Value ?? "Guest";
-        public string employeeId => User.FindFirst("employee_id")?.Value ?? "0";
+        public string role =>
+            user.FindFirst(ClaimTypes.Role)?.Value
+            ?? throw new UnauthorizedAccessException("Role claim missing");
 
-        public string employeeDisplayId => User.FindFirst("employee_display_id")?.Value ?? "EM-000";
-        public string branchId => User.FindFirst("branch_id")?.Value ?? "0";
+        public string employeeId =>
+            user.FindFirst("employee_id")?.Value
+            ?? throw new UnauthorizedAccessException("Employee ID claim missing");
 
-        public string GetBranchDisplayId(ClaimsPrincipal user)
+        public string employeeDisplayId =>
+            user.FindFirst("employee_display_id")?.Value
+            ?? throw new UnauthorizedAccessException("Employee display ID missing");
+
+        public string branchId =>
+            user.FindFirst("branch_id")?.Value
+            ?? throw new UnauthorizedAccessException("Branch ID missing");
+
+        public string branchDisplayId
         {
-            var role = user.FindFirst(ClaimTypes.Role)?.Value;
+            get
+            {
+                if (role == "admin")
+                    return "ADMIN";
 
-            if (role == "admin")
-                return "ADMIN";
-
-            return user.FindFirst("branch_display_id")?.Value ?? "";
+                return user.FindFirst("branch_display_id")?.Value
+                    ?? throw new UnauthorizedAccessException("Branch display ID missing");
+            }
         }
     }
 }

@@ -13,11 +13,11 @@ namespace InventorySystemBackend.Services
     public class JwtService
     {
         private readonly DatabaseContext dbContext;
-        private readonly IConfiguration iconfig;
-        public JwtService(DatabaseContext dbContext, IConfiguration iconfig)
+        private readonly IConfiguration configuration;
+        public JwtService(DatabaseContext dbContext, IConfiguration configuration)
         {
             this.dbContext = dbContext;
-            this.iconfig = iconfig;
+            this.configuration = configuration;
         }
 
         public async Task<LoginResponseModel?> Authenticate(LoginRequestDTO request)
@@ -74,13 +74,13 @@ namespace InventorySystemBackend.Services
             };
 
             var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(iconfig["JwtConfig:Key"])
+                Encoding.UTF8.GetBytes(configuration["JwtConfig:Key"])
             );
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: iconfig["JwtConfig:Issuer"],
-                audience: iconfig["JwtConfig:Audience"],
+                issuer: configuration["JwtConfig:Issuer"],
+                audience: configuration["JwtConfig:Audience"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddHours(2),
                 signingCredentials: creds

@@ -1,5 +1,6 @@
 ﻿using InventorySystemBackend.Data;
 using InventorySystemBackend.DTOs;
+using InventorySystemBackend.DTOs.InventoryDTOs;
 using InventorySystemBackend.Models.Entities;
 using InventorySystemBackend.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -26,18 +27,24 @@ namespace InventorySystemBackend.Controllers
             var branch_id = int.Parse(User.Claims
                     .First(c => c.Type == "branch_id").Value);
 
-            var inventory = await dbContext.Inventories
-                .Where(i => i.branch_id == branch_id && i.product_qty > 0 && i.Products.product_status == "active")
-                .Select(i => new InventoryDTO
+            var inventory = dbContext.Inventories
+                .Select(i => new InventoryDisplayDTO
                 {
                     product_id = i.product_id,
+                    branch_display_id = i.Branch.branch_display_id,
+                    product_qty = i.product_qty,
+
                     product_display_id = i.Products.product_display_id,
                     product_name = i.Products.product_name,
                     product_type = i.Products.product_type,
+                    product_note = i.Products.product_note,
+                    product_gender = i.Products.product_gender,
+                    product_barcode = i.Products.product_barcode,
                     product_status = i.Products.product_status,
-                    quantity = i.product_qty
+                    product_price = i.Products.product_price,
+                    product_image_url = i.Products.product_image_url
                 })
-                .ToListAsync();
+                .ToList();
 
             if (!inventory.Any())
                 return NotFound("No inventory found.");
@@ -46,14 +53,14 @@ namespace InventorySystemBackend.Controllers
         }
 
         [HttpPost("add")]
-        public async Task<IActionResult> AddInventory(AddInventoryDTO dto)
+        public async Task<IActionResult> AddInventory(UpdateQuantityDTO dto)
         {
             using var transaction = await dbContext.Database.BeginTransactionAsync();
             try {
                 var claims = new ClaimsGetter(User);
                 var role = claims.role;
                 var user = claims.employeeDisplayId;
-                var userBranch = claims.GetBranchDisplayId(User);
+                var userBranch = claims.branchDisplayId;
                 var branch_id = int.Parse(claims.branchId);
                     
 

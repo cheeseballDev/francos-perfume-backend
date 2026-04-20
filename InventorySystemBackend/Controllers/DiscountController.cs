@@ -35,7 +35,7 @@ namespace InventorySystemBackend.Controllers
                 var claims = new ClaimsGetter(User);
                 var role = claims.role;
                 var user = claims.employeeDisplayId;
-                var userBranch = claims.GetBranchDisplayId(User);
+                var userBranch = claims.branchDisplayId;
                 var branch_id = int.Parse(claims.branchId);
 
                 if (dto.discount_amount < 0 || dto.discount_percent < 0)

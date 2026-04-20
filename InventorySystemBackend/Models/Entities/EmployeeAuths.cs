@@ -21,10 +21,8 @@ namespace InventorySystemBackend.Models.Entities
         public DateTime created_at { get; set; } = DateTime.UtcNow;
 
         [ForeignKey("employee_id")]
-        public EmployeeProfiles Employee { get; set; }
+        public EmployeeProfiles? Employee { get; set; }
         public required string password_status { get; set; }
         public required string account_status { get; set; }
-
-
     }
 }
