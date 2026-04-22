@@ -42,7 +42,8 @@ namespace InventorySystemBackend.Controllers
                     product_barcode = i.Products.product_barcode,
                     product_status = i.Products.product_status,
                     product_price = i.Products.product_price,
-                    product_image_url = i.Products.product_image_url
+                    product_image_url = i.Products.product_image_url,
+                    product_date_created = i.Products.product_date_created
                 })
                 .ToList();
 
