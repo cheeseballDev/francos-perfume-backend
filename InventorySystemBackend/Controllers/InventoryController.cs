@@ -31,7 +31,8 @@ namespace InventorySystemBackend.Controllers
                 .Select(i => new InventoryDisplayDTO
                 {
                     product_id = i.product_id,
-                    branch_display_id = i.Branch.branch_display_id,
+                    //branch_display_id = i.Branch.branch_display_id,
+                    branch_name = i.Branch.branch_location,
                     product_qty = i.product_qty,
 
                     product_display_id = i.Products.product_display_id,
@@ -42,7 +43,8 @@ namespace InventorySystemBackend.Controllers
                     product_barcode = i.Products.product_barcode,
                     product_status = i.Products.product_status,
                     product_price = i.Products.product_price,
-                    product_image_url = i.Products.product_image_url
+                    product_image_url = i.Products.product_image_url,
+                    product_date_created = i.Products.product_date_created
                 })
                 .ToList();
 
