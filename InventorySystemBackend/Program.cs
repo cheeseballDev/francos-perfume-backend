@@ -64,7 +64,7 @@ builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<EmployeeCreationService>();
 builder.Services.AddScoped<EmployeeUpdateAuthService>();
 builder.Services.AddScoped<EmployeeUpdateProfileService>();
-builder.Services.AddScoped<DiscountService>();
+builder.Services.AddScoped<DiscountApplyingService>();
 builder.Services.AddScoped<InventoryService>();
 builder.Services.AddScoped<PaymentService>();
 builder.Services.AddScoped<POSService>();

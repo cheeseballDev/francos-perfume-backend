@@ -7,10 +7,10 @@ public class POSService
 {
     private readonly DatabaseContext dbContext;
     private readonly InventoryService inventoryService;
-    private readonly DiscountService discountService;
+    private readonly DiscountApplyingService discountService;
     private readonly PaymentService paymentService;
 
-    public POSService(DatabaseContext dbContext, InventoryService inventoryService, DiscountService discountService, PaymentService paymentService)
+    public POSService(DatabaseContext dbContext, InventoryService inventoryService, DiscountApplyingService discountService, PaymentService paymentService)
     {
         this.dbContext = dbContext;
         this.inventoryService = inventoryService;

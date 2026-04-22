@@ -20,10 +20,22 @@ namespace InventorySystemBackend.Controllers
         }
 
         [HttpGet("displayAllDiscounts")]
-        public IActionResult GetDiscounts()
+        public async Task<IActionResult> GetDiscounts()
         {
-            var discounts = dbContext.Discounts.ToList();
-            return Ok(discounts);
+            var discount = await dbContext.Discounts.ToListAsync();
+            var displayDiscounts = new List<DiscountsDTO>();
+            foreach (var discounts in displayDiscounts)
+            {
+                displayDiscounts.Add(new DiscountsDTO
+                {
+                    discount_name = discounts.discount_name,
+                    discount_percent = discounts.discount_percent,
+                    discount_amount = discounts.discount_amount,
+                    discount_status = discounts.discount_status,
+                    discount_prefix = discounts.discount_prefix
+                });
+            }
+            return Ok(displayDiscounts);
         }
 
         [HttpPost("add")]

@@ -3,11 +3,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace InventorySystemBackend.Services
 {
-    public class DiscountService
+    public class DiscountApplyingService
     {
         private readonly DatabaseContext dbContext;
 
-        public DiscountService(DatabaseContext dbContext)
+        public DiscountApplyingService(DatabaseContext dbContext)
         {
             this.dbContext = dbContext;
         }

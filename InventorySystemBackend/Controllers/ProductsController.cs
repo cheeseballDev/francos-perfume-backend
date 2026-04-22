@@ -2,6 +2,8 @@
 using InventorySystemBackend.DTOs.ProductDTOs;
 using InventorySystemBackend.Models.Entities;
 using InventorySystemBackend.Services;
+using InventorySystemBackend.Services.EmployeeServices;
+using InventorySystemBackend.Services.ProductServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,17 +15,38 @@ namespace InventorySystemBackend.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly DatabaseContext dbContext;
+        private readonly ProductAddingService productAddingService;
+        private readonly ProductUpdatingService productUpdatingService;
 
-        public ProductsController(DatabaseContext dbContext)
+        public ProductsController(DatabaseContext dbContext, ProductAddingService productAddingService, ProductUpdatingService productUpdatingService)
         {
             this.dbContext = dbContext;
+            this.productAddingService = productAddingService;
+            this.productUpdatingService = productUpdatingService;
         }
 
         [HttpGet("displayAll")]
-        public IActionResult DisplayProducts()
+        public async Task<IActionResult> DisplayProducts()
         {
-            var allProducts = dbContext.Products.ToList();
-            return Ok(allProducts);
+            var products = await dbContext.Products.ToListAsync();
+            var productList = new List<DisplayProductDTO>();
+            foreach (var product in products)
+            {
+                productList.Add(new DisplayProductDTO
+                {
+                    product_display_id = product.product_display_id,
+                    product_name = product.product_name,
+                    product_type = product.product_type,
+                    product_note = product.product_note,
+                    product_gender = product.product_gender,
+                    product_barcode = product.product_barcode,
+                    product_date_created = product.product_date_created,
+                    product_description = product.product_description,
+                    product_price = product.product_price,
+                    product_image_url = product.product_image_url
+                });
+            }
+            return Ok(productList);
         }
 
         [HttpGet("displayOne/{id}")]
@@ -40,109 +63,27 @@ namespace InventorySystemBackend.Controllers
         [HttpPost("add")]
         public async Task<IActionResult> AddProducts(AddProductDTO dto)
         {
-            using var transaction = await dbContext.Database.BeginTransactionAsync();
+            var claims = new ClaimsGetter(User);
 
-            try
-            {
-                var claims = new ClaimsGetter(User);
-                var role = claims.role;
-                var user = claims.employeeDisplayId;
-                var userBranch = claims.branchDisplayId;
+            var result = await productAddingService.AddProductAsync(dto, claims);
 
-                var products = new Products
-                {
-                    product_name = dto.product_name,
-                    product_type = dto.product_type,
-                    product_note = dto.product_note,
-                    product_gender = dto.product_gender,
-                    product_barcode = dto.product_barcode,
-                    product_date_created = DateTime.UtcNow,
-                    product_status = "active",
-                    product_description = dto.product_description,
-                    product_price = dto.product_price,
-                    product_image_url = dto.product_image_url
-                };
+            if (!result.Success)
+                return BadRequest(result.Message);
 
-                dbContext.Products.Add(products);
-                await dbContext.SaveChangesAsync();
-
-                var audit = new AuditLogs
-                {
-                    employee_display_id = user,
-                    branch_display_id = userBranch,
-                    log_action = $"Added product ({products.product_display_id})",
-                    log_module = "Product Management",
-                    log_timestamp = DateTime.UtcNow
-                };
-                dbContext.AuditLogs.Add(audit);
-                await dbContext.SaveChangesAsync();
-
-                await transaction.CommitAsync();
-
-                return Ok(new
-                {
-                    products.product_id,
-                    products.product_display_id
-                });
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                return StatusCode(500, ex.ToString());
-            }
+            return Ok(result.Data);
         }
 
         [HttpPut("updateProduct/{id:int}")]
         public async Task<IActionResult> UpdateProductInformation(int id, UpdateProductDTO dto)
         {
-            using var transaction = await dbContext.Database.BeginTransactionAsync();
+            var claims = new ClaimsGetter(User);
 
-            try
-            {
-                var claims = new ClaimsGetter(User);
-                var role = claims.role;
-                var user = claims.employeeDisplayId;
-                var userBranch = claims.branchDisplayId;
-                var products = await dbContext.Products.FindAsync(id);
+            var result = await productUpdatingService.UpdateProductAsync(id, dto, claims);
 
-                if (products == null)
-                    return NotFound();
+            if (!result.Success)
+                return BadRequest(result.Message);
 
-                products.product_name = dto.product_name;
-                products.product_type = dto.product_type;
-                products.product_note = dto.product_note;
-                products.product_gender = dto.product_gender;
-                products.product_barcode = dto.product_barcode;
-                products.product_description = dto.product_description;
-                products.product_price = dto.product_price;
-                products.product_image_url = dto.product_image_url;
-
-                await dbContext.SaveChangesAsync();
-
-                var audit = new AuditLogs
-                {
-                    employee_display_id = user,
-                    branch_display_id = userBranch,
-                    log_action = $"Updated product ({products.product_display_id})",
-                    log_module = "Product Management",
-                    log_timestamp = DateTime.UtcNow
-                };
-                dbContext.AuditLogs.Add(audit);
-                await dbContext.SaveChangesAsync();
-
-                await transaction.CommitAsync();
-
-                return Ok(new
-                {
-                    products.product_display_id,
-                    products.product_name,
-                });
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                return StatusCode(500, ex.ToString());
-            }
-        }
+            return Ok(result.Data);
+        }       
     }
 }
