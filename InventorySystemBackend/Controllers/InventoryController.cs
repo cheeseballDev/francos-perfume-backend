@@ -31,7 +31,8 @@ namespace InventorySystemBackend.Controllers
                 .Select(i => new InventoryDisplayDTO
                 {
                     product_id = i.product_id,
-                    branch_display_id = i.Branch.branch_display_id,
+                    //branch_display_id = i.Branch.branch_display_id,
+                    branch_name = i.Branch.branch_location,
                     product_qty = i.product_qty,
 
                     product_display_id = i.Products.product_display_id,

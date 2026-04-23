@@ -14,7 +14,8 @@
         public string? product_image_url { get; set; }
         public DateTime product_date_created { get; set; }
 
-        public string? branch_display_id { get; set; }
+        public string? branch_name { get; set; }
+        //public string? branch_display_id { get; set; }
         public int product_qty { get; set; }
     }
 }
