@@ -25,7 +25,6 @@ namespace InventorySystemBackend.Models.Entities
         public string? product_description {  get; set; }
         public decimal product_price { get; set; }
         public required string product_image_url { get; set; }
-
-
+        
     }
 }
