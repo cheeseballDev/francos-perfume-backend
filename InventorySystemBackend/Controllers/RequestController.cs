@@ -25,13 +25,6 @@ namespace InventorySystemBackend.Controllers
             var claims = new ClaimsGetter(User);
             var userBranchId = int.Parse(claims.branchId);
 
-            var requests = await dbContext.Requests
-                .FirstOrDefaultAsync(r =>
-                    r.branch_id == userBranchId);
-
-            if (requests == null)
-                return NotFound();
-
             var requestList = await dbContext.Requests
                 .Where(r => r.branch_id == userBranchId)
                 .Select(r => new DisplayRequestDTO
