@@ -20,6 +20,9 @@ namespace InventorySystemBackend.Models.Entities
 
         public string? reference_id { get; set; }
         public string? note { get; set; }
+        public required string delivered_by { get; set; }
+        public required string delivered_to { get; set; }
+        public required string delivery_status { get; set; }
 
         public DateTime created_at { get; set; } = DateTime.UtcNow;
         [ForeignKey("product_id")]

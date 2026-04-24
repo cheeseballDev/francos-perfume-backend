@@ -22,7 +22,8 @@ namespace InventorySystemBackend.Services.ProductServices
             {
                 var role = claims.role;
                 var user = claims.employeeDisplayId;
-                var userBranch = claims.branchDisplayId;
+                var userBranch = claims.branchId;
+                var userBranchDisplayId = claims.branchDisplayId;
 
                 var products = new Products
                 {
@@ -40,11 +41,20 @@ namespace InventorySystemBackend.Services.ProductServices
 
                 dbContext.Products.Add(products);
                 await dbContext.SaveChangesAsync();
+                var addInventory = new Inventory
+                {
+                    product_id = products.product_id,
+                    branch_id = int.Parse(userBranch),
+                    product_qty = 0
+                };
+               
+                dbContext.Inventories.Add(addInventory);
+                await dbContext.SaveChangesAsync();
 
                 var audit = new AuditLogs
                 {
                     employee_display_id = user,
-                    branch_display_id = userBranch,
+                    branch_display_id = userBranchDisplayId,
                     log_action = $"Added product ({products.product_display_id})",
                     log_module = "Product Management",
                     log_timestamp = DateTime.UtcNow
