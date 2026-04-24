@@ -1,8 +1,10 @@
 ﻿using InventorySystemBackend.Data;
 using InventorySystemBackend.DTOs;
 using InventorySystemBackend.DTOs.InventoryDTOs;
+using InventorySystemBackend.DTOs.ProductDTOs;
 using InventorySystemBackend.Models.Entities;
 using InventorySystemBackend.Services;
+using InventorySystemBackend.Services.ProductServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,10 +16,12 @@ namespace InventorySystemBackend.Controllers
     public class InventoryController : ControllerBase
     {
         private readonly DatabaseContext dbContext;
+        private readonly ProductAddingService productAddingService;
 
-        public InventoryController(DatabaseContext dbContext)
+        public InventoryController(DatabaseContext dbContext, ProductAddingService productAddingService)
         {
             this.dbContext = dbContext;
+            this.productAddingService = productAddingService;
         }
 
         [HttpGet("displayAll")]
@@ -34,7 +38,6 @@ namespace InventorySystemBackend.Controllers
                     //branch_display_id = i.Branch.branch_display_id,
                     branch_name = i.Branch.branch_location,
                     product_qty = i.product_qty,
-
                     product_display_id = i.Products.product_display_id,
                     product_name = i.Products.product_name,
                     product_type = i.Products.product_type,
@@ -55,8 +58,17 @@ namespace InventorySystemBackend.Controllers
         }
 
         [HttpPost("add")]
-        public async Task<IActionResult> AddInventory(UpdateQuantityDTO dto)
-        {
+        public async Task<IActionResult> AddInventory(AddProductDTO dto) //Change to AddInventoryDTO if you want to add inventory without creating a new product. For now, this will create a new product and add it to the inventory of the user's branch.
+        {//tangina angas ng autofill lmao
+            var claims = new ClaimsGetter(User);
+
+            var result = await productAddingService.AddProductAsync(dto, claims);
+
+            if (!result.Success)
+                return BadRequest(result.Message);
+
+            return Ok(result.Data);
+            /* //FOR CENTRALIZED INVENTORY MANAGEMENT
             using var transaction = await dbContext.Database.BeginTransactionAsync();
             try {
                 var claims = new ClaimsGetter(User);
@@ -120,6 +132,7 @@ namespace InventorySystemBackend.Controllers
                 await transaction.RollbackAsync();
                 return StatusCode(500, ex.ToString());
             }
+            */
         }
 
         [HttpPatch("updateQuantity/{id:int}")]
