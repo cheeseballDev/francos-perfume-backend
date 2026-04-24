@@ -23,7 +23,7 @@ namespace InventorySystemBackend.Services.RequestServices
                 var role = claims.role;
                 var user = claims.employeeDisplayId;
                 var userId = claims.employeeId;
-                var userBranchId = claims.branchId;
+                var userBranchId = int.Parse(claims.branchId);
                 var userBranch = claims.branchDisplayId;
 
                 var exists = await dbContext.Products
@@ -33,7 +33,7 @@ namespace InventorySystemBackend.Services.RequestServices
                     return ServiceResult.Fail("Product does not exist");
 
                 var fromBranch = await dbContext.Branches
-                    .FirstOrDefaultAsync(b => b.branch_display_id == userBranch);
+                    .FirstOrDefaultAsync(b => b.branch_id == userBranchId);
 
                 if (fromBranch == null)
                     return ServiceResult.Fail("User branch not found");
