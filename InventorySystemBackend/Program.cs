@@ -1,5 +1,9 @@
 using InventorySystemBackend.Data;
 using InventorySystemBackend.Services;
+using InventorySystemBackend.Services.ArchivingServices;
+using InventorySystemBackend.Services.EmployeeServices;
+using InventorySystemBackend.Services.ProductServices;
+using InventorySystemBackend.Services.RequestServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -70,6 +74,18 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true
     };
 });
+builder.Services.AddScoped<AccountArchivingService>();
+builder.Services.AddScoped<ProductArchivingService>();
+builder.Services.AddScoped<EmployeeCreationService>();
+builder.Services.AddScoped<EmployeeUpdateAuthService>();
+builder.Services.AddScoped<EmployeeUpdateProfileService>();
+builder.Services.AddScoped<DiscountApplyingService>();
+builder.Services.AddScoped<InventoryService>();
+builder.Services.AddScoped<PaymentService>();
+builder.Services.AddScoped<POSService>();
+builder.Services.AddScoped<ProductAddingService>();
+builder.Services.AddScoped<ProductUpdatingService>();
+builder.Services.AddScoped<CreateRequestService>();
 builder.Services.AddScoped<JwtService>();
 
 builder.Services.AddAuthentication();

@@ -34,6 +34,9 @@ namespace InventorySystemBackend.Services
                 if (role == "admin")
                     return "ADMIN";
 
+                if(role == "owner")
+                    return "OWNER";
+
                 return user.FindFirst("branch_display_id")?.Value
                     ?? throw new UnauthorizedAccessException("Branch display ID missing");
             }

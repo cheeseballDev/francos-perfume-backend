@@ -1,4 +1,5 @@
 ﻿using InventorySystemBackend.Data;
+using InventorySystemBackend.DTOs;
 using InventorySystemBackend.DTOs.ProductDTOs;
 using InventorySystemBackend.Models.Entities;
 using InventorySystemBackend.Services;
@@ -6,6 +7,7 @@ using InventorySystemBackend.Services.EmployeeServices;
 using InventorySystemBackend.Services.ProductServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
 namespace InventorySystemBackend.Controllers
@@ -26,27 +28,38 @@ namespace InventorySystemBackend.Controllers
         }
 
         [HttpGet("displayAll")]
-        public async Task<IActionResult> DisplayProducts()
+        public async Task<IActionResult> DisplayProducts(int page = 1, int pageSize = 20)
         {
-            var products = await dbContext.Products.ToListAsync();
-            var productList = new List<DisplayProductDTO>();
-            foreach (var product in products)
+            var totalProducts = await dbContext.Products.CountAsync();
+            var totalProductsPages = (int)Math.Ceiling(totalProducts / (double)pageSize);
+            var allProducts = await dbContext.Products
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+
+            var displayList = allProducts.Select(allProducts => new DisplayProductDTO
             {
-                productList.Add(new DisplayProductDTO
-                {
-                    product_display_id = product.product_display_id,
-                    product_name = product.product_name,
-                    product_type = product.product_type,
-                    product_note = product.product_note,
-                    product_gender = product.product_gender,
-                    product_barcode = product.product_barcode,
-                    product_date_created = product.product_date_created,
-                    product_description = product.product_description,
-                    product_price = product.product_price,
-                    product_image_url = product.product_image_url
-                });
-            }
-            return Ok(productList);
+                product_display_id = allProducts.product_display_id,
+                product_name = allProducts.product_name,
+                product_type = allProducts.product_type,
+                product_note = allProducts.product_note,
+                product_gender = allProducts.product_gender,
+                product_barcode = allProducts.product_barcode,
+                product_date_created = allProducts.product_date_created,
+                product_description = allProducts.product_description,
+                product_price = allProducts.product_price,
+                product_image_url = allProducts.product_image_url
+            }).ToList();
+
+            return Ok(new
+            {
+                totalProducts,
+                totalProductsPages,
+                page,
+                pageSize,
+                data = displayList
+            });
         }
 
         [HttpGet("displayOne/{id}")]

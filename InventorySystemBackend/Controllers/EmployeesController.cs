@@ -1,4 +1,5 @@
 ﻿using InventorySystemBackend.Data;
+using InventorySystemBackend.DTOs;
 using InventorySystemBackend.DTOs.EmployeeDTOs;
 using InventorySystemBackend.Services;
 using InventorySystemBackend.Services.EmployeeServices;
@@ -27,7 +28,7 @@ namespace InventorySystemBackend.Controllers
             this.employeeUpdateAuthService = employeeUpdateAuthService;
         }
         [HttpGet("displayAll")]
-        public async Task<IActionResult> DisplayEmployees()
+        public async Task<IActionResult> DisplayEmployees(int page = 1, int pageSize = 20)
         {
             var claims = new ClaimsGetter(User);
             var role = claims.role;
@@ -35,31 +36,41 @@ namespace InventorySystemBackend.Controllers
 
             var query = dbContext.EmployeeProfiles.AsQueryable();
 
-            if (role != "ADMIN")
+            if (role != "ADMIN" && role != "OWNER")
             {
                 query = query.Where(i => i.branch_id == branchId);
             }
 
-            var employeeList = await query.ToListAsync();
-            var displayList = new List<DisplayEmployeeProfileDTO>();
-            foreach (var employees in employeeList)
-            {
-                displayList.Add(new DisplayEmployeeProfileDTO
-                {
-                    employee_id = employees.employee_id,
-                    employee_display_id = employees.employee_display_id,
-                    branch_id = employees.branch_id,
-                    branch_display_id = employees.branch_display_id,
-                    employee_full_name = employees.employee_full_name,
-                    contact_number = employees.contact_number,
-                    address = employees.address,
-                    employee_shift = employees.employee_shift,
-                    account_created = employees.account_created,
-                    employee_profile_picture = employees.employee_profile_picture
-                });
-            }
+            var totalEmployees = await query.CountAsync();
+            var totalEmployeesList = (int)Math.Ceiling(totalEmployees / (double)pageSize);
+            var allEmployees = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
 
-            return Ok(displayList);
+
+            var displayList = allEmployees.Select(allEmployees => new DisplayEmployeeProfileDTO
+            {
+                employee_id = allEmployees.employee_id,
+                employee_display_id = allEmployees.employee_display_id,
+                branch_id = allEmployees.branch_id,
+                branch_display_id = allEmployees.branch_display_id,
+                employee_full_name = allEmployees.employee_full_name,
+                contact_number = allEmployees.contact_number,
+                address = allEmployees.address,
+                employee_shift = allEmployees.employee_shift,
+                account_created = allEmployees.account_created,
+                employee_profile_picture = allEmployees.employee_profile_picture
+            }).ToList();
+
+            return Ok(new
+            {
+                totalEmployees,
+                totalEmployeesList,
+                page,
+                pageSize,
+                data = displayList
+            });
         }
 
         [HttpGet("displayOne/{id}")]

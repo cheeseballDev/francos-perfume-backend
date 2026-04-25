@@ -8,6 +8,8 @@ using InventorySystemBackend.Services.ProductServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace InventorySystemBackend.Controllers
 {
@@ -25,50 +27,62 @@ namespace InventorySystemBackend.Controllers
         }
 
         [HttpGet("displayAll")]
-        public async Task<IActionResult> DisplayInventory()
+        public async Task<IActionResult> DisplayInventory(int page = 1, int pageSize = 20)
         {
+            var claims = new ClaimsGetter(User);
+            var branch_id = int.Parse(claims.branchId);
+            var branchId = int.Parse(claims.branchId);
+            var role = claims.role;
 
-            var branch_id = int.Parse(User.Claims
-                    .First(c => c.Type == "branch_id").Value);
+            var query = dbContext.Inventories
+                .Include(i => i.Branch)
+                .Include(i => i.Products)
+                .AsQueryable();
 
-            var inventory = dbContext.Inventories
-                .Select(i => new InventoryDisplayDTO
-                {
-                    product_id = i.product_id,
-                    //branch_display_id = i.Branch.branch_display_id,
-                    branch_name = i.Branch.branch_location,
-                    product_qty = i.product_qty,
-                    product_display_id = i.Products.product_display_id,
-                    product_name = i.Products.product_name,
-                    product_type = i.Products.product_type,
-                    product_note = i.Products.product_note,
-                    product_gender = i.Products.product_gender,
-                    product_barcode = i.Products.product_barcode,
-                    product_status = i.Products.product_status,
-                    product_price = i.Products.product_price,
-                    product_image_url = i.Products.product_image_url,
-                    product_date_created = i.Products.product_date_created
-                })
-                .ToList();
+            if (role != "OWNER")
+            {
+                query = query.Where(i => i.branch_id == branchId);
+            }
 
-            if (!inventory.Any())
-                return NotFound("No inventory found.");
+            var totalInventories = await query.CountAsync();
+            var totalInventoriesPages = (int)Math.Ceiling(totalInventories / (double)pageSize);
+            var allInventories = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
 
-            return Ok(inventory);
+
+            var displayList = allInventories.Select(allInventories => new InventoryDisplayDTO
+            {
+                product_id = allInventories.product_id,
+                branch_display_id = allInventories.Branch.branch_display_id,
+                branch_name = allInventories.Branch.branch_location,
+                product_qty = allInventories.product_qty,
+                product_display_id = allInventories.Products.product_display_id,
+                product_name = allInventories.Products.product_name,
+                product_type = allInventories.Products.product_type,
+                product_note = allInventories.Products.product_note,
+                product_gender = allInventories.Products.product_gender,
+                product_barcode = allInventories.Products.product_barcode,
+                product_status = allInventories.Products.product_status,
+                product_price = allInventories.Products.product_price,
+                product_image_url = allInventories.Products.product_image_url,
+                product_date_created = allInventories.Products.product_date_created
+            }).ToList();
+
+            return Ok(new
+            {
+                totalInventories,
+                totalInventoriesPages,
+                page,
+                pageSize,
+                data = displayList
+            });
         }
 
         [HttpPost("add")]
-        public async Task<IActionResult> AddInventory(AddProductDTO dto) //Change to AddInventoryDTO if you want to add inventory without creating a new product. For now, this will create a new product and add it to the inventory of the user's branch.
-        {//tangina angas ng autofill lmao
-            var claims = new ClaimsGetter(User);
-
-            var result = await productAddingService.AddProductAsync(dto, claims);
-
-            if (!result.Success)
-                return BadRequest(result.Message);
-
-            return Ok(result.Data);
-            /* //FOR CENTRALIZED INVENTORY MANAGEMENT
+        public async Task<IActionResult> AddInventory(UpdateQuantityDTO dto)
+        {
             using var transaction = await dbContext.Database.BeginTransactionAsync();
             try {
                 var claims = new ClaimsGetter(User);
@@ -117,7 +131,7 @@ namespace InventorySystemBackend.Controllers
                     employee_display_id = user,
                     branch_display_id = userBranch,
                     log_action = $"Added to inventory ({product.product_display_id})",
-                    log_module = "Employee Management",
+                    log_module = "Inventory Management",
                     log_timestamp = DateTime.UtcNow
                 };
                 dbContext.AuditLogs.Add(audit);
@@ -132,7 +146,6 @@ namespace InventorySystemBackend.Controllers
                 await transaction.RollbackAsync();
                 return StatusCode(500, ex.ToString());
             }
-            */
         }
 
         [HttpPatch("updateQuantity/{id:int}")]

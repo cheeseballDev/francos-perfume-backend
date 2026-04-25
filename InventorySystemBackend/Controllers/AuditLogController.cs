@@ -1,5 +1,6 @@
 ﻿using InventorySystemBackend.Data;
 using InventorySystemBackend.DTOs;
+using InventorySystemBackend.DTOs.ArchiveDisplayDTOs;
 using InventorySystemBackend.Models.Entities;
 using InventorySystemBackend.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -24,23 +25,45 @@ namespace InventorySystemBackend.Controllers
         }
 
         [HttpGet("displayAll")]
-        public async Task<IActionResult> DisplayEmployees()
+        public async Task<IActionResult> DisplayAuditLogs(int page = 1, int pageSize = 20)
         {
             var claims = new ClaimsGetter(User);
             var role = claims.role;
             var branchDisplayId = claims.branchDisplayId;
 
-            if (role != "admin")
-            {
-                var branchAuditLogs = await dbContext.AuditLogs
-                    .Where(i => i.branch_display_id == branchDisplayId)
-                    .ToListAsync();
+            var query = dbContext.AuditLogs.AsQueryable();
 
-                return Ok(branchAuditLogs);
+            if (role != "ADMIN" && role != "OWNER")
+            {
+                query = query.Where(i => i.branch_display_id == branchDisplayId);
             }
 
-            var allAuditLogs = await dbContext.AuditLogs.ToListAsync();
-            return Ok(allAuditLogs);
+            var totalAuditLogs = await query.CountAsync();
+            var totalAuditLogsPages = (int)Math.Ceiling(totalAuditLogs / (double)pageSize);
+            var allAuditLogs = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+
+            var displayList = allAuditLogs.Select(allAuditLogs => new AuditLogDisplayDTO
+            {
+                log_display_id = allAuditLogs.log_display_id,
+                employee_display_id = allAuditLogs.employee_display_id,
+                branch_display_id = allAuditLogs.branch_display_id,
+                log_action = allAuditLogs.log_action,
+                log_module = allAuditLogs.log_module,
+                log_timestamp = allAuditLogs.log_timestamp
+            }).ToList();
+
+            return Ok(new
+            {
+                totalAuditLogs,
+                totalAuditLogsPages,
+                page,
+                pageSize,
+                data = displayList
+            });
         }
     }
 }

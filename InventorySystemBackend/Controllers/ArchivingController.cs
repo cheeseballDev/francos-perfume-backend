@@ -1,9 +1,12 @@
 ﻿using InventorySystemBackend.Data;
 using InventorySystemBackend.DTOs.ArchiveDisplayDTOs;
+using InventorySystemBackend.Models.Entities;
 using InventorySystemBackend.Services;
 using InventorySystemBackend.Services.ArchivingServices;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace InventorySystemBackend.Controllers
 {
@@ -47,8 +50,8 @@ namespace InventorySystemBackend.Controllers
             return Ok(result.Data);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> DisplayArchivedAccounts()
+        [HttpGet("displayArchivedAccounts")]
+        public async Task<IActionResult> DisplayArchivedAccounts(int page = 1, int pageSize = 20)
         {
             var claims = new ClaimsGetter(User);
             var role = claims.role;
@@ -56,57 +59,76 @@ namespace InventorySystemBackend.Controllers
 
             var query = dbContext.ArchivedAccounts.AsQueryable();
 
-            if (role != "ADMIN")
+            if (role != "ADMIN" && role != "OWNER")
             {
                 query = query.Where(i => i.branch_id == branchId);
             }
 
-            var employeeArchiveList = await query.ToListAsync();
-            var displayList = new List<ArchivedAccountDisplayDTO>();
-            foreach (var archivedEmployee in employeeArchiveList)
-            {
-                displayList.Add(new ArchivedAccountDisplayDTO
-                {
-                    account_archive_display_id = archivedEmployee.account_archive_display_id,
-                    employee_display_id = archivedEmployee.employee_display_id,
-                    branch_id = archivedEmployee.branch_id,
-                    email = archivedEmployee.email,
-                    role = archivedEmployee.employee_role,
-                    archived_by = archivedEmployee.archived_by,
-                    date_archived = archivedEmployee.date_archived
-                });
-            }
+            var totalAccounts = await query.CountAsync();
+            var totalAccountsPages = (int)Math.Ceiling(totalAccounts / (double)pageSize);
 
-            return Ok(displayList);
+            var accounts = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var displayList = accounts.Select(archivedEmployee => new ArchivedAccountDisplayDTO
+            {
+                account_archive_display_id = archivedEmployee.account_archive_display_id,
+                employee_display_id = archivedEmployee.employee_display_id,
+                branch_id = archivedEmployee.branch_id,
+                email = archivedEmployee.email,
+                role = archivedEmployee.employee_role,
+                archived_by = archivedEmployee.archived_by,
+                date_archived = archivedEmployee.date_archived
+            }).ToList();
+
+            return Ok(new
+            {
+                totalAccounts,
+                totalAccountsPages,
+                page,
+                pageSize,
+                data = displayList
+            });
         }
 
         [HttpGet("displayArchivedProducts")]
-        public async Task<IActionResult> DisplayArchivedProducts()
+        public async Task<IActionResult> DisplayArchivedProducts(int page = 1, int pageSize = 20)
         {
             var claims = new ClaimsGetter(User);
             var role = claims.role;
             var branchId = int.Parse(claims.branchId);
 
-            var productArchiveList = await dbContext.ArchivedProducts.ToListAsync();
+            var totalProducts = await dbContext.ArchivedProducts.CountAsync();
+            var totalProductsPages = (int)Math.Ceiling(totalProducts / (double)pageSize);
 
-            var displayList = new List<ArchivedProductDisplayDTO>();
-            foreach (var archivedProduct in productArchiveList)
+            var products = await dbContext.ArchivedProducts
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var displayList = products.Select(archivedProduct => new ArchivedProductDisplayDTO
             {
-                displayList.Add(new ArchivedProductDisplayDTO
-                {
-                    product_archive_display_id = archivedProduct.product_archive_display_id,
-                    product_display_id = archivedProduct.product_display_id,
-                    product_name = archivedProduct.product_name,
-                    product_type = archivedProduct.product_type,
-                    product_note = archivedProduct.product_note,
-                    product_gender = archivedProduct.product_gender,
-                    product_barcode = archivedProduct.product_barcode,
-                    archived_by = archivedProduct.archived_by,
-                    date_archived = archivedProduct.date_archived
-                });
-            }
+                product_archive_display_id = archivedProduct.product_archive_display_id,
+                product_display_id = archivedProduct.product_display_id,
+                product_name = archivedProduct.product_name,
+                product_type = archivedProduct.product_type,
+                product_note = archivedProduct.product_note,
+                product_gender = archivedProduct.product_gender,
+                product_barcode = archivedProduct.product_barcode,
+                archived_by = archivedProduct.archived_by,
+                date_archived = archivedProduct.date_archived
+            }).ToList();
 
-            return Ok(displayList);
+            return Ok(new
+            {
+                totalProducts,
+                totalProductsPages,
+                page,
+                pageSize,
+                data = displayList
+            });
         }
     }
 }
