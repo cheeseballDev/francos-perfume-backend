@@ -1,10 +1,12 @@
 ﻿using InventorySystemBackend.Data;
 using InventorySystemBackend.DTOs;
+using InventorySystemBackend.DTOs.InventoryDTOs;
 using InventorySystemBackend.Models.Entities;
 using InventorySystemBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace InventorySystemBackend.Controllers
 {
@@ -20,22 +22,33 @@ namespace InventorySystemBackend.Controllers
         }
 
         [HttpGet("displayAllDiscounts")]
-        public async Task<IActionResult> GetDiscounts()
+        public async Task<IActionResult> GetDiscounts(int page = 1, int pageSize = 20)
         {
-            var discount = await dbContext.Discounts.ToListAsync();
-            var displayDiscounts = new List<DiscountsDTO>();
-            foreach (var discounts in displayDiscounts)
+            var totalDiscounts = await dbContext.Discounts.CountAsync();
+            var totalInventoriesPages = (int)Math.Ceiling(totalDiscounts / (double)pageSize);
+            var allDiscounts = await dbContext.Discounts
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+
+            var displayList = allDiscounts.Select(allDiscounts => new DiscountsDTO
             {
-                displayDiscounts.Add(new DiscountsDTO
-                {
-                    discount_name = discounts.discount_name,
-                    discount_percent = discounts.discount_percent,
-                    discount_amount = discounts.discount_amount,
-                    discount_status = discounts.discount_status,
-                    discount_prefix = discounts.discount_prefix
-                });
-            }
-            return Ok(displayDiscounts);
+                discount_name = allDiscounts.discount_name,
+                discount_percent = allDiscounts.discount_percent,
+                discount_amount = allDiscounts.discount_amount,
+                discount_status = allDiscounts.discount_status,
+                discount_prefix = allDiscounts.discount_prefix
+            }).ToList();
+
+            return Ok(new
+            {
+                totalDiscounts,
+                totalInventoriesPages,
+                page,
+                pageSize,
+                data = displayList
+            });
         }
 
         [HttpPost("add")]

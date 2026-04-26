@@ -1,9 +1,11 @@
 ﻿using InventorySystemBackend.Data;
+using InventorySystemBackend.DTOs.ProductDTOs;
 using InventorySystemBackend.DTOs.RequestDTOs;
 using InventorySystemBackend.Services;
 using InventorySystemBackend.Services.ProductServices;
 using InventorySystemBackend.Services.RequestServices;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
 namespace InventorySystemBackend.Controllers
@@ -20,36 +22,42 @@ namespace InventorySystemBackend.Controllers
         }
 
         [HttpGet("displayAll")]
-        public async Task<IActionResult> DisplayRequests()
+        public async Task<IActionResult> DisplayRequests(int page = 1, int pageSize = 20)
         {
             var claims = new ClaimsGetter(User);
-            var userBranchId = int.Parse(claims.branchId);
+            var userBranchDisplayId = claims.branchDisplayId;
 
-            var requests = await dbContext.Requests
-                .FirstOrDefaultAsync(r =>
-                    r.branch_id == userBranchId);
-
-            if (requests == null)
-                return NotFound();
-
-            var requestList = await dbContext.Requests
-                .Where(r => r.branch_id == userBranchId)
-                .Select(r => new DisplayRequestDTO
-                {
-                    request_display_id = r.request_display_id,
-                    product_name = r.Product.product_name,
-                    employee_display_id = r.Employee.employee_display_id,
-                    request_qty = r.request_qty,
-                    request_date_submitted = r.request_date_submitted,
-                    request_message = r.request_message,
-                    request_status = r.request_status,
-                    requested_from = r.FromBranch.branch_location,
-                    delivered_to = r.ToBranch.branch_location,
-                    delivery_type = r.delivery_type
-                })
+            var totalRequests = await dbContext.Requests.CountAsync();
+            var totalRequestsPages = (int)Math.Ceiling(totalRequests / (double)pageSize);
+            var allRequests = await dbContext.Requests
+                .Where(r => r.requested_from == userBranchDisplayId)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
-            return Ok(requestList);
+
+            var displayList = allRequests.Select(allRequests => new DisplayRequestDTO
+            {
+                request_display_id = allRequests.request_display_id,
+                product_name = allRequests.Product.product_name,
+                employee_display_id = allRequests.Employee.employee_display_id,
+                request_qty = allRequests.request_qty,
+                request_date_submitted = allRequests.request_date_submitted,
+                request_message = allRequests.request_message,
+                request_status = allRequests.request_status,
+                requested_from = allRequests.FromBranch.branch_location,
+                delivered_to = allRequests.ToBranch.branch_location,
+                delivery_type = allRequests.delivery_type
+            }).ToList();
+
+            return Ok(new
+            {
+                totalRequests,
+                totalRequestsPages,
+                page,
+                pageSize,
+                data = displayList
+            });
         }
 
         [HttpPost("create")]

@@ -44,7 +44,6 @@ namespace InventorySystemBackend.Services.RequestServices
                 if (toBranch == null)
                     return ServiceResult.Fail("Destination branch not found");
 
-
                 var request = new Requests
                 {
                     product_id = dto.product_id,
