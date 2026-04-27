@@ -18,12 +18,12 @@ public class POSService
         this.paymentService = paymentService;
     }
 
-    public async Task<ServiceResult> CheckoutAsync(POSDTO dto, ClaimsGetter claims)
+    public async Task<ServiceResult> CheckoutAsync(POSDTO posdto, ClaimsGetter claims)
     {
-        if (dto == null || dto.items == null || !dto.items.Any())
+        if (posdto == null || posdto.items == null || !posdto.items.Any())
             return ServiceResult.Fail("No items provided");
 
-        if (dto.amount_paid <= 0)
+        if (posdto.amount_paid <= 0)
             return ServiceResult.Fail("Invalid payment amount");
 
         using var transaction = await dbContext.Database.BeginTransactionAsync();
@@ -32,6 +32,9 @@ public class POSService
         {
             int employeeId = Convert.ToInt32(claims.employeeId);
             int branchId = Convert.ToInt32(claims.branchId);
+            string employeeDisplayId = claims.employeeDisplayId;
+            string branchDisplayId = claims.branchDisplayId;
+            string employeeName = claims.employeeName;
 
             var order = new SalesOrder
             {
@@ -44,32 +47,60 @@ public class POSService
             await dbContext.SaveChangesAsync();
 
             var (total, orderDetails, error) =
-                await inventoryService.ProcessItems(dto.items, branchId, order.sales_order_id);
+                await inventoryService.ProcessItems(posdto.items, branchId, order.sales_order_id);
 
             if (error != null)
                 return ServiceResult.Fail(error);
 
-            total = await discountService.ApplyDiscount(dto.discount_id, total);
+            total = await discountService.ApplyDiscount(posdto.discount_id, total);
 
-            if (dto.amount_paid < total)
+            if (posdto.amount_paid < total)
                 return ServiceResult.Fail("Amount paid is less than total.");
 
             order.total_amount = total;
 
             dbContext.SalesOrderDetails.AddRange(orderDetails);
 
-            var payment = await paymentService.CreatePayment(order.sales_order_id, dto, total);
+            var payment = await paymentService.CreatePayment(order.sales_order_id, posdto, total);
 
             await dbContext.SaveChangesAsync();
             await transaction.CommitAsync();
+
+            var subtotal = orderDetails.Sum(x => x.unit_price * x.quantity);
+            var vatableSales = Math.Round(total / 1.12m, 2);
+            var vatAmount = Math.Round(total - vatableSales, 2);
+
+            var receipt = new ReceiptDTO
+            {
+                receipt_number = order.sales_order_display_id,
+                transaction_date = order.sales_timestamp,
+                items = orderDetails.Select(od => new ReceiptItemDTO
+                {
+                    product_name = od.Products.product_name,
+                    quantity = od.quantity,
+                    unit_price = od.unit_price,
+                    total_price = od.unit_price * od.quantity
+                }).ToList(),
+
+                subtotal = subtotal,
+                discount_amount = subtotal - total,              
+                total = total,
+                payment_method = posdto.payment_method,
+                amount_paid = payment.amount_paid,
+                change = payment.change_amount,
+                vatable_sales = vatableSales,
+                vat_amount = vatAmount,
+                branch = branchDisplayId,
+                transaction_id = payment.payment_display_id,
+                employee_id = employeeDisplayId,
+                employee_name = employeeName
+            };
 
             return ServiceResult.Ok(new
             {
                 order.sales_order_display_id,
                 payment.payment_display_id,
-                total,
-                payment.amount_paid,
-                payment.change_amount
+                receipt
             });
         }
         catch (Exception ex)

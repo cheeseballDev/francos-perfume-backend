@@ -65,12 +65,13 @@ namespace InventorySystemBackend.Services
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, account.email),
+                new Claim("employee_email", account.email),
                 new Claim(ClaimTypes.Role, account.employee_role),
                 new Claim("branch_id", employee.branch_id.ToString()),
                 new Claim("branch_display_id", employee.branch_display_id),
                 new Claim("employee_id", employee.employee_id.ToString()),
-                new Claim("employee_display_id", employee.employee_display_id)
+                new Claim("employee_display_id", employee.employee_display_id),
+                new Claim("employee_name", employee.employee_full_name)
             };
 
             var key = new SymmetricSecurityKey(
