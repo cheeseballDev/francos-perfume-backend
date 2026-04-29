@@ -27,6 +27,6 @@ namespace InventorySystemBackend.Models.Entities
         public required string employee_profile_picture {  get; set; }
         [ForeignKey("branch_id")]
         public virtual Branches Branch{ get; set; }
-        public ICollection<EmployeeAuths> AuthMethods { get; set; } = new List<EmployeeAuths>();
+        //public ICollection<EmployeeAuths> AuthMethods { get; set; } = new List<EmployeeAuths>();
     }
 }

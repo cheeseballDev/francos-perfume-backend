@@ -1,5 +1,6 @@
 ﻿using InventorySystemBackend.Data;
 using InventorySystemBackend.DTOs.ArchiveDisplayDTOs;
+using InventorySystemBackend.DTOs.EmployeeDTOs;
 using InventorySystemBackend.Models.Entities;
 using InventorySystemBackend.Services;
 using InventorySystemBackend.Services.ArchivingServices;
@@ -48,6 +49,58 @@ namespace InventorySystemBackend.Controllers
                 return BadRequest(result.Message);
 
             return Ok(result.Data);
+        }
+
+        [HttpPut("archivedAccountDetails/{id:int}")]
+        public async Task<IActionResult> ArchiveAccountDetails(int id)
+        {
+            var archivedAccount = dbContext.ArchivedAccounts
+                .Where(i => i.account_archive_id == id)
+                .Select(i => new ArchivedAccountDisplayDTO
+                {
+                    account_archive_display_id = i.account_archive_display_id,
+                    employee_display_id = i.employee_display_id,
+                    branch_id = i.branch_id,
+                    email = i.email,
+                    role = i.employee_role,
+                    archived_by = i.archived_by,
+                    date_archived = i.date_archived
+                })
+                .FirstOrDefault();
+
+            if (archivedAccount == null)
+            {
+                return NotFound(new { message = "Account not found" });
+            }
+
+            return Ok(archivedAccount);
+        }
+
+        [HttpPut("archivedProductDetails/{id:int}")]
+        public async Task<IActionResult> ArchiveProductDetails(int id)
+        {
+            var archivedProduct = dbContext.ArchivedProducts
+                .Where(i => i.product_archive_id == id)
+                .Select(i => new ArchivedProductDisplayDTO
+                {
+                    product_archive_display_id = i.product_archive_display_id,
+                    product_display_id = i.product_display_id,
+                    product_name = i.product_name,
+                    product_type = i.product_type,
+                    product_note = i.product_note,
+                    product_gender = i.product_gender,
+                    product_barcode = i.product_barcode,
+                    archived_by = i.archived_by,
+                    date_archived = i.date_archived
+                })
+                .FirstOrDefault();
+
+            if (archivedProduct == null)
+            {
+                return NotFound(new { message = "Product not found" });
+            }
+
+            return Ok(archivedProduct);
         }
 
         [HttpGet("displayArchivedAccounts")]

@@ -65,5 +65,27 @@ namespace InventorySystemBackend.Controllers
                 data = displayList
             });
         }
+
+        [HttpGet("displayOneAuditLog")]
+        public async Task<IActionResult> AuditLogDetails(int id)
+        {
+            var displayAuditLog = await dbContext.AuditLogs
+                .Where(i => i.log_id == id)
+                .Select(i => new AuditLogDisplayDTO
+                {
+                    log_display_id = i.log_display_id,
+                    employee_display_id = i.employee_display_id,
+                    branch_display_id = i.branch_display_id,
+                    log_action = i.log_action,
+                    log_module = i.log_module,
+                    log_timestamp = i.log_timestamp
+                })
+                .FirstOrDefaultAsync();
+            if (displayAuditLog == null)
+            {
+                return NotFound(new { message = "Audit Log not found" });
+            }
+            return Ok(displayAuditLog);
+        }
     }
 }

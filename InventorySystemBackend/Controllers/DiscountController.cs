@@ -1,6 +1,6 @@
 ﻿using InventorySystemBackend.Data;
 using InventorySystemBackend.DTOs;
-using InventorySystemBackend.DTOs.InventoryDTOs;
+using InventorySystemBackend.DTOs.DiscountDTOs;
 using InventorySystemBackend.Models.Entities;
 using InventorySystemBackend.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -32,7 +32,7 @@ namespace InventorySystemBackend.Controllers
                 .ToListAsync();
 
 
-            var displayList = allDiscounts.Select(allDiscounts => new DiscountsDTO
+            var displayList = allDiscounts.Select(allDiscounts => new AddDiscountDTO
             {
                 discount_name = allDiscounts.discount_name,
                 discount_percent = allDiscounts.discount_percent,
@@ -52,7 +52,7 @@ namespace InventorySystemBackend.Controllers
         }
 
         [HttpPost("add")]
-        public async Task<IActionResult> AddDiscount(DiscountsDTO dto)
+        public async Task<IActionResult> AddDiscount(AddDiscountDTO dto)
         {
             using var transaction = await dbContext.Database.BeginTransactionAsync();
             try
@@ -102,6 +102,28 @@ namespace InventorySystemBackend.Controllers
                 await transaction.RollbackAsync();
                 return StatusCode(500, ex.ToString());
             }
+        }
+
+        [HttpGet("displayOneDiscount")]
+        public async Task<IActionResult> DiscountDetails(int id)
+        {
+            var displayDiscount = await dbContext.Discounts
+                .Where(i => i.discount_id == id)
+                .Select(i => new DisplayDiscountDTO
+                {
+                    discount_name = i.discount_name,
+                    discount_amount = i.discount_amount,
+                    discount_percent = i.discount_percent,
+                    discount_status = i.discount_status,
+                    discount_created = i.discount_created,
+                    discount_prefix = i.discount_prefix
+                })
+                .FirstOrDefaultAsync();
+            if (displayDiscount == null)
+            {
+                return NotFound(new { message = "Discount not found" });
+            }
+            return Ok(displayDiscount);
         }
     }
 }

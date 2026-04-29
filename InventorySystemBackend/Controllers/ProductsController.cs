@@ -1,5 +1,6 @@
 ﻿using InventorySystemBackend.Data;
 using InventorySystemBackend.DTOs;
+using InventorySystemBackend.DTOs.InventoryDTOs;
 using InventorySystemBackend.DTOs.ProductDTOs;
 using InventorySystemBackend.Models.Entities;
 using InventorySystemBackend.Services;
@@ -97,6 +98,34 @@ namespace InventorySystemBackend.Controllers
                 return BadRequest(result.Message);
 
             return Ok(result.Data);
-        }       
+        }
+
+        [HttpPut("displayOneProduct/{id:int}")]
+        public async Task<IActionResult> ProductDetails(int id)
+        {
+            var displayProduct = dbContext.Products
+                .Where(i => i.product_id == id)
+                .Select(i => new DisplayProductDTO
+                {
+                    product_display_id = i.product_display_id,
+                    product_name = i.product_name,
+                    product_type = i.product_type,
+                    product_note = i.product_note,
+                    product_gender = i.product_gender,
+                    product_barcode = i.product_barcode,
+                    product_date_created = i.product_date_created,
+                    product_description = i.product_description,
+                    product_price = i.product_price,
+                    product_image_url = i.product_image_url
+                })
+                .FirstOrDefault();
+
+            if (displayProduct == null)
+            {
+                return NotFound(new { message = "Product not found" });
+            }
+
+            return Ok(displayProduct);
+        }
     }
 }

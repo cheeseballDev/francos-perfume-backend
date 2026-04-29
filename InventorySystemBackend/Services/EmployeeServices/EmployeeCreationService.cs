@@ -72,11 +72,12 @@ namespace InventorySystemBackend.Services.EmployeeServices
                 dbContext.EmployeeAuths.Add(auth);
                 await dbContext.SaveChangesAsync();
 
+                var newEmployee = employee.employee_display_id;
                 var audit = new AuditLogs
                 {
                     employee_display_id = user,
                     branch_display_id = userBranch,
-                    log_action = $"Added account ({employee.employee_display_id})",
+                    log_action = $"Added account ({newEmployee})",
                     log_module = "Employee Management",
                     log_timestamp = DateTime.UtcNow
                 };
@@ -95,7 +96,7 @@ namespace InventorySystemBackend.Services.EmployeeServices
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return ServiceResult.Fail(ex.Message);
+                return ServiceResult.Fail(ex.ToString());
             }
         }
     }
