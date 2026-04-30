@@ -1,6 +1,6 @@
 ﻿using InventorySystemBackend.Data;
 using InventorySystemBackend.DTOs;
-using InventorySystemBackend.DTOs.ArchiveDisplayDTOs;
+using InventorySystemBackend.DTOs.AuditLogDTOs;
 using InventorySystemBackend.Models.Entities;
 using InventorySystemBackend.Services;
 using Microsoft.AspNetCore.Authorization;

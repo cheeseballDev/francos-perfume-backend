@@ -20,7 +20,7 @@ namespace InventorySystemBackend.Services
             this.configuration = configuration;
         }
 
-        public async Task<LoginResponseModel?> Authenticate(LoginRequestDTO request)
+        public async Task<LoginResponseModel?> Authenticate(LoginDTO request)
         {
             if (string.IsNullOrWhiteSpace(request.email) || string.IsNullOrWhiteSpace(request.password))
                 return null;

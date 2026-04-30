@@ -53,7 +53,7 @@ namespace InventorySystemBackend.Controllers
                 .ToListAsync();
 
 
-            var displayList = allInventories.Select(allInventories => new InventoryDisplayDTO
+            var displayList = allInventories.Select(allInventories => new DisplayInventory
             {
                 product_id = allInventories.product_id,
                 branch_display_id = allInventories.Branch.branch_display_id,
@@ -184,7 +184,7 @@ namespace InventorySystemBackend.Controllers
         {
             var displayInventory = dbContext.Inventories
                 .Where(i => i.product_id == id)
-                .Select(i => new InventoryDisplayDTO
+                .Select(i => new DisplayInventory
                 {
                     product_id = i.product_id,
                     branch_display_id = i.Branch.branch_display_id,

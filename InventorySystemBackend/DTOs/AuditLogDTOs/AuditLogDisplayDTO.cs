@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace InventorySystemBackend.DTOs
+namespace InventorySystemBackend.DTOs.AuditLogDTOs
 {
     public class AuditLogDisplayDTO
     {

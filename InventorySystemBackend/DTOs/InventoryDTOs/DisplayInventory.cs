@@ -1,6 +1,6 @@
 ﻿namespace InventorySystemBackend.DTOs.InventoryDTOs
 {
-    public class InventoryDisplayDTO
+    public class DisplayInventory
     {
         public int product_id { get; set; }
         public string? product_display_id { get; set; }

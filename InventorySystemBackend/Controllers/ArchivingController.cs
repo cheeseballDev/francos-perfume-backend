@@ -56,7 +56,7 @@ namespace InventorySystemBackend.Controllers
         {
             var archivedAccount = dbContext.ArchivedAccounts
                 .Where(i => i.account_archive_id == id)
-                .Select(i => new ArchivedAccountDisplayDTO
+                .Select(i => new DisplayArchivedAccountsDTO
                 {
                     account_archive_display_id = i.account_archive_display_id,
                     employee_display_id = i.employee_display_id,
@@ -81,7 +81,7 @@ namespace InventorySystemBackend.Controllers
         {
             var archivedProduct = dbContext.ArchivedProducts
                 .Where(i => i.product_archive_id == id)
-                .Select(i => new ArchivedProductDisplayDTO
+                .Select(i => new DisplayArchivedProductsDTO
                 {
                     product_archive_display_id = i.product_archive_display_id,
                     product_display_id = i.product_display_id,
@@ -125,7 +125,7 @@ namespace InventorySystemBackend.Controllers
                 .Take(pageSize)
                 .ToListAsync();
 
-            var displayList = accounts.Select(archivedEmployee => new ArchivedAccountDisplayDTO
+            var displayList = accounts.Select(archivedEmployee => new DisplayArchivedAccountsDTO
             {
                 account_archive_display_id = archivedEmployee.account_archive_display_id,
                 employee_display_id = archivedEmployee.employee_display_id,
@@ -161,7 +161,7 @@ namespace InventorySystemBackend.Controllers
                 .Take(pageSize)
                 .ToListAsync();
 
-            var displayList = products.Select(archivedProduct => new ArchivedProductDisplayDTO
+            var displayList = products.Select(archivedProduct => new DisplayArchivedProductsDTO
             {
                 product_archive_display_id = archivedProduct.product_archive_display_id,
                 product_display_id = archivedProduct.product_display_id,
