@@ -20,7 +20,7 @@ namespace InventorySystemBackend.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginRequestDTO dto)
+        public async Task<IActionResult> Login(LoginDTO dto)
         {
             var result = await jwtService.Authenticate(dto);
 

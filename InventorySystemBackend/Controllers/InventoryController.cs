@@ -1,5 +1,6 @@
 ﻿using InventorySystemBackend.Data;
 using InventorySystemBackend.DTOs;
+using InventorySystemBackend.DTOs.ArchiveDisplayDTOs;
 using InventorySystemBackend.DTOs.InventoryDTOs;
 using InventorySystemBackend.DTOs.ProductDTOs;
 using InventorySystemBackend.Models.Entities;
@@ -52,7 +53,7 @@ namespace InventorySystemBackend.Controllers
                 .ToListAsync();
 
 
-            var displayList = allInventories.Select(allInventories => new InventoryDisplayDTO
+            var displayList = allInventories.Select(allInventories => new DisplayInventory
             {
                 product_id = allInventories.product_id,
                 branch_display_id = allInventories.Branch.branch_display_id,
@@ -176,6 +177,38 @@ namespace InventorySystemBackend.Controllers
                 existingInventory.product_id,
                 existingInventory.product_qty
             });
+        }
+
+        [HttpPut("displayOneInventory/{id:int}")]
+        public async Task<IActionResult> InventoryDetails(int id)
+        {
+            var displayInventory = dbContext.Inventories
+                .Where(i => i.product_id == id)
+                .Select(i => new DisplayInventory
+                {
+                    product_id = i.product_id,
+                    branch_display_id = i.Branch.branch_display_id,
+                    branch_name = i.Branch.branch_location,
+                    product_qty = i.product_qty,
+                    product_display_id = i.Products.product_display_id,
+                    product_name = i.Products.product_name,
+                    product_type = i.Products.product_type,
+                    product_note = i.Products.product_note,
+                    product_gender = i.Products.product_gender,
+                    product_barcode = i.Products.product_barcode,
+                    product_status = i.Products.product_status,
+                    product_price = i.Products.product_price,
+                    product_image_url = i.Products.product_image_url,
+                    product_date_created = i.Products.product_date_created
+                })
+                .FirstOrDefault();
+
+            if (displayInventory == null)
+            {
+                return NotFound(new { message = "Inventory not found" });
+            }
+
+            return Ok(displayInventory);
         }
     }
 }

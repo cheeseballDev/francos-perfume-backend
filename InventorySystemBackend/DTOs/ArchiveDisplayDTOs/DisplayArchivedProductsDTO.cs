@@ -1,6 +1,6 @@
 ﻿namespace InventorySystemBackend.DTOs.ArchiveDisplayDTOs
 {
-    public class ArchivedProductDisplayDTO
+    public class DisplayArchivedProductsDTO
     {
         public string product_archive_display_id { get; set; }
 

@@ -87,7 +87,6 @@ builder.Services.AddScoped<ProductAddingService>();
 builder.Services.AddScoped<ProductUpdatingService>();
 builder.Services.AddScoped<CreateRequestService>();
 builder.Services.AddScoped<JwtService>();
-
 builder.Services.AddAuthentication();
 var app = builder.Build();
 // Configure pipeline

@@ -1,6 +1,6 @@
 ﻿namespace InventorySystemBackend.DTOs
 {
-    public class LoginRequestDTO
+    public class LoginDTO
     {
         public string? email { get; set; }
         public string? password { get; set; }

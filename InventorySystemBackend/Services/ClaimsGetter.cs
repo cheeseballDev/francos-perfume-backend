@@ -41,5 +41,13 @@ namespace InventorySystemBackend.Services
                     ?? throw new UnauthorizedAccessException("Branch display ID missing");
             }
         }
+
+        public string employeeName =>
+            user.FindFirst("employee_name")?.Value
+            ?? throw new UnauthorizedAccessException("Employee name missing");
+
+        public string employeeEmail =>
+            user.FindFirst("employee_email")?.Value
+            ?? throw new UnauthorizedAccessException("Employee email missing");
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace InventorySystemBackend.DTOs.ArchiveDisplayDTOs
 {
-    public class ArchivedAccountDisplayDTO
+    public class DisplayArchivedAccountsDTO
     {
         public string account_archive_display_id { get; set; }
         public string employee_display_id { get; set; }

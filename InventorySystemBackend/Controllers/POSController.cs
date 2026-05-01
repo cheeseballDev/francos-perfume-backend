@@ -21,11 +21,11 @@ namespace InventorySystemBackend.Controllers
         }
 
         [HttpPost("checkout")]
-        public async Task<IActionResult> Checkout(POSDTO dto)
+        public async Task<IActionResult> Checkout(POSDTO posdto)
         {
             var claims = new ClaimsGetter(User);
 
-            var result = await posService.CheckoutAsync(dto, claims);
+            var result = await posService.CheckoutAsync(posdto, claims);
 
             if (!result.Success)
                 return BadRequest(result.Message);
