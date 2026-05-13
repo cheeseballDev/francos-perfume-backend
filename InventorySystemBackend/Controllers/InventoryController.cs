@@ -28,7 +28,7 @@ namespace InventorySystemBackend.Controllers
         }
 
         [HttpGet("displayAll")]
-        public async Task<IActionResult> DisplayInventory(int page = 1, int pageSize = 20)
+        public async Task<IActionResult> DisplayInventory(int page, int pageSize)
         {
             var claims = new ClaimsGetter(User);
             var branch_id = int.Parse(claims.branchId);
